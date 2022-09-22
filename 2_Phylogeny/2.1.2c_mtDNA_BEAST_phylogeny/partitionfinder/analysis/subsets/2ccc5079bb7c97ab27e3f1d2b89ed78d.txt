@@ -1,0 +1,10 @@
+Model selection results for subset: 2ccc5079bb7c97ab27e3f1d2b89ed78d
+Subset alignment stored here: ./analysis/phylofiles/2ccc5079bb7c97ab27e3f1d2b89ed78d.phy
+This subset contains the following data_blocks: CYTb_pos3, COX1_pos3, NAD5_pos3, NAD6_pos3
+Number of columns in subset: 1677
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+G           | 9               | -4222.3374      | 8462.783         | 8462.675        | 8511.498       
+GTR+I+G         | 10              | -4222.339       | 8464.81          | 8464.678        | 8518.926       
+GTR             | 8               | -4225.6387      | 8467.363         | 8467.277        | 8510.676       

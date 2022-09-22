@@ -1,0 +1,10 @@
+Model selection results for subset: 570a9d612052f185d2c883ade7dc8a21
+Subset alignment stored here: ./analysis/phylofiles/570a9d612052f185d2c883ade7dc8a21.phy
+This subset contains the following data_blocks: NAD1_pos3, NAD3_pos3, NAD4L_pos3, NAD2_pos3
+Number of columns in subset: 885
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+G           | 9               | -2099.1208      | 4216.4473        | 4216.2417       | 4259.312       
+GTR             | 8               | -2102.0044      | 4220.1733        | 4220.009        | 4258.2935      
+GTR+I+G         | 10              | -2291.7668      | 4603.7856        | 4603.5337       | 4651.3896      

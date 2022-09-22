@@ -1,0 +1,10 @@
+Model selection results for subset: 679d23fb4580218cc3c85e1e04c4737f
+Subset alignment stored here: ./analysis/phylofiles/679d23fb4580218cc3c85e1e04c4737f.phy
+This subset contains the following data_blocks: COX2_pos2, COX3_pos2, COX1_pos2
+Number of columns in subset: 1006
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR             | 8               | -1359.6002      | 2735.345         | 2735.2004       | 2774.5103      
+GTR+G           | 9               | -1359.6006      | 2737.3818        | 2737.2012       | 2781.4248      
+GTR+I+G         | 10              | -1359.6011      | 2739.4233        | 2739.2021       | 2788.3396      

@@ -1,0 +1,10 @@
+Model selection results for subset: dd38f180a810099bfda3e54d1796059d
+Subset alignment stored here: ./analysis/phylofiles/dd38f180a810099bfda3e54d1796059d.phy
+This subset contains the following data_blocks: NAD2_pos1, NAD5_pos1, RRNA
+Number of columns in subset: 3560
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+I+G         | 10              | -6424.6807      | 12869.423        | 12869.361       | 12931.137      
+GTR+G           | 9               | -6428.439       | 12874.929        | 12874.878       | 12930.476      
+GTR             | 8               | -6455.4062      | 12926.854        | 12926.8125      | 12976.232      

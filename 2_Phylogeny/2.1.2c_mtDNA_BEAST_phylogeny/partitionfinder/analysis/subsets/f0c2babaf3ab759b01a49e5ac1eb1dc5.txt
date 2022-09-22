@@ -1,0 +1,10 @@
+Model selection results for subset: f0c2babaf3ab759b01a49e5ac1eb1dc5
+Subset alignment stored here: ./analysis/phylofiles/f0c2babaf3ab759b01a49e5ac1eb1dc5.phy
+This subset contains the following data_blocks: NAD6_pos2
+Number of columns in subset: 174
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+G           | 9               | -253.24849      | 525.59454        | 524.49695       | 552.92847      
+GTR             | 8               | -254.51387      | 525.90045        | 525.0277        | 550.3002       
+GTR+I+G         | 10              | -253.71158      | 528.7728         | 527.42316       | 559.01373      

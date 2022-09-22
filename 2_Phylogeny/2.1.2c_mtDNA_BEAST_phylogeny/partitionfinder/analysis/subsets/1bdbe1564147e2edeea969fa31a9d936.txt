@@ -1,0 +1,10 @@
+Model selection results for subset: 1bdbe1564147e2edeea969fa31a9d936
+Subset alignment stored here: ./analysis/phylofiles/1bdbe1564147e2edeea969fa31a9d936.phy
+This subset contains the following data_blocks: NAD4_pos2, NAD3_pos2, CYTb_pos2, NAD1_pos2, NAD4L_pos2
+Number of columns in subset: 1380
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+G           | 9               | -1929.3243      | 3876.78          | 3876.6487       | 3923.7173      
+GTR             | 8               | -1930.5369      | 3877.1787        | 3877.0737       | 3918.9124      
+GTR+I+G         | 10              | -1928.925       | 3878.0107        | 3877.85         | 3930.1484      

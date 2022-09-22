@@ -1,0 +1,10 @@
+Model selection results for subset: 80827284f88f71b3b556699207ee9289
+Subset alignment stored here: ./analysis/phylofiles/80827284f88f71b3b556699207ee9289.phy
+This subset contains the following data_blocks: ATP8_pos1
+Number of columns in subset: 58
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR             | 8               | -107.47199      | 233.88277        | 230.94398       | 247.42754      
+GTR+G           | 9               | -107.38877      | 236.52754        | 232.77754       | 251.32153      
+GTR+I+G         | 10              | -107.11704      | 238.91493        | 234.23409       | 254.83852      

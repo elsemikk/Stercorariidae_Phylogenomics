@@ -1,0 +1,10 @@
+Model selection results for subset: 85b73472c8f90f195ba2a9c79d915895
+Subset alignment stored here: ./analysis/phylofiles/85b73472c8f90f195ba2a9c79d915895.phy
+This subset contains the following data_blocks: TRNA
+Number of columns in subset: 1516
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+I+G         | 10              | -2447.2942      | 4914.7344        | 4914.5884       | 4967.8267      
+GTR+G           | 9               | -2448.3137      | 4914.747         | 4914.6274       | 4962.542       
+GTR             | 8               | -2451.9934      | 4920.0825        | 4919.987        | 4962.5776      

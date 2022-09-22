@@ -1,0 +1,10 @@
+Model selection results for subset: bc46754209b796697dfe0be008a67cec
+Subset alignment stored here: ./analysis/phylofiles/bc46754209b796697dfe0be008a67cec.phy
+This subset contains the following data_blocks: ATP8_pos3, COX3_pos3, COX2_pos3, ATP6_pos3, NAD4_pos3
+Number of columns in subset: 1230
+Models are organised according to their AICc scores
+
+Model           | Parameters      | lnL             | AICc             | AIC             | BIC            
+GTR+I+G         | 10              | -2887.5996      | 5795.38          | 5795.199        | 5846.3467      
+GTR+G           | 9               | -2890.4905      | 5799.1284        | 5798.981        | 5845.0137      
+GTR             | 8               | -2901.3572      | 5818.8325        | 5818.7144       | 5859.6323      

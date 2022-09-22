@@ -1,0 +1,26 @@
+Mode    : Converter
+Options : --input-haps Stercorarius.PAJAbowtie.MC1R.heterozygotes.shapeit.phased --output-vcf Stercorarius.PAJAbowtie.MC1R.heterozygotes.shapeit.phased.vcf
+Version : v2.r904
+Date    : 05/04/2022 20:57:39
+
+MODE -convert : CONVERTING/SUBSETTING SHAPEIT HAPLOTYPES
+
+Parameters :
+  * Seed : 1649206659
+  * Parallelisation: 1 threads
+  * Ref allele is NOT aligned on the reference genome
+
+Reading sample list in [Stercorarius.PAJAbowtie.MC1R.heterozygotes.shapeit.phased.sample]
+  * 18 individuals included
+
+Reading site list and haplotypes in [Stercorarius.PAJAbowtie.MC1R.heterozygotes.shapeit.phased.haps]
+  * 324 sites included
+
+Mapping sites and samples of the haplotype set
+  * 324 sites found
+  * 0 sites not found
+  * 36 founder haplotypes
+
+Writing haplotypes in [Stercorarius.PAJAbowtie.MC1R.heterozygotes.shapeit.phased.vcf] in VCF format
+
+Running time: 0 seconds
