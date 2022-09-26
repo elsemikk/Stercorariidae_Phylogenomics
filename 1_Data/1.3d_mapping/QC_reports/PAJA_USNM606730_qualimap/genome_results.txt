@@ -1,0 +1,27 @@
+BamQC report
+-----------------------------------
+
+>>>>>>> Input
+
+     bam file = merged/PAJA_USNM606730.RAZObowtie.marked.bam
+     outfile = QC_reports/PAJA_USNM606730_qualimap/genome_results.txt
+
+
+>>>>>>> Reference
+
+     number of bases = 1,178,492,568 bp
+     number of contigs = 95
+
+
+>>>>>>> Globals
+
+     number of windows = 494
+
+     number of reads = 134,957,205
+     number of mapped reads = 0 (0%)
+
+     number of mapped bases = 0 bp
+     number of sequenced bases = 0 bp
+     number of aligned bases = 0 bp
+     number of duplicated reads (estimated) = 0
+     duplication rate = 0%

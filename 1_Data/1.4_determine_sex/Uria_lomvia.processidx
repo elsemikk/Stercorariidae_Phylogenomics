@@ -1,0 +1,48 @@
+Using a read length of 150 bp.
+Adjust second command line argument if this is not correct.
+The file being processed is idxstats_Uria_lomvia.txt 
+
+-----------------------------
+There are 5917 scaffolds in this dataset, with a total length of 1172164891 bp
+There are 636932166 mapped reads for this individual, for an average sequencing depth of 81.50715 X 
+The mean number of reads per chromosome is 107644.4 with a standard deviation of 427.0251 
+The correlation between scaffold length and mapped reads is 0.9951056 
+The covariance between scaffold length and mapped reads is 1.139304e+13 
+
+-----------------------------
+
+Created a linear model of the relationship between scaffold length and mapped reads:
+
+Call:
+lm(formula = Mapped_Reads ~ Length, data = idxdata)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-18352015      1939      2123      2201   3583880 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -2.280e+03  3.249e+03  -0.702    0.483    
+Length       5.549e-01  7.165e-04 774.483   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 249700 on 5915 degrees of freedom
+Multiple R-squared:  0.9902,	Adjusted R-squared:  0.9902 
+F-statistic: 5.998e+05 on 1 and 5915 DF,  p-value: < 2.2e-16
+
+Congratulations! It looks like the Z chromosome is chrZ 
+
+-----------------------------
+The correlation between scaffold length and mapped reads is 0.9998399 after removing the Z
+The covariance between scaffold length and mapped reads is 1.100961e+13 after removing the Z
+A plot of sequencing reads vs chromosome length has been produced (with and without the putative Z, if detected.)
+You may want to inspect it visually to confirm that it follows the expected pattern
+
+-----------------------------
+Warning: the depth of coverage deviates significantly from the expected value of half the autosomal sequencing depth
+Binomial test: p= 2.173889e-322 
+The sequencing depth of the Z is 0.5871025 times the depth of the other chromosomes
+Warning: a very elevated value here could indicate inaccurate read mapping
+null device 
+          1 

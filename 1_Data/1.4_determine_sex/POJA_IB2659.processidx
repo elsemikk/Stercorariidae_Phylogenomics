@@ -1,0 +1,49 @@
+Using a read length of 150 bp.
+Adjust second command line argument if this is not correct.
+The file being processed is idxstats_POJA_IB2659.txt 
+
+-----------------------------
+There are 5917 scaffolds in this dataset, with a total length of 1172164891 bp
+There are 116386445 mapped reads for this individual, for an average sequencing depth of 14.89378 X 
+The mean number of reads per chromosome is 19669.84 with a standard deviation of 71.92725 
+The correlation between scaffold length and mapped reads is 0.9919163 
+The covariance between scaffold length and mapped reads is 1.912871e+12 
+
+-----------------------------
+
+Created a linear model of the relationship between scaffold length and mapped reads:
+
+Call:
+lm(formula = Mapped_Reads ~ Length, data = idxdata)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-3392907    -1247    -1228    -1189  1513301 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 1.214e+03  7.028e+02   1.727   0.0842 .  
+Length      9.317e-02  1.550e-04 601.191   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 54010 on 5915 degrees of freedom
+Multiple R-squared:  0.9839,	Adjusted R-squared:  0.9839 
+F-statistic: 3.614e+05 on 1 and 5915 DF,  p-value: < 2.2e-16
+
+Congratulations! It looks like the Z chromosome is chrZ 
+You might also want to investigate all these scaffolds: chr15 chr17 VWZL01000220.1 VWZL01006318.1 
+
+-----------------------------
+The correlation between scaffold length and mapped reads is 0.9975976 after removing the Z
+The covariance between scaffold length and mapped reads is 1.852853e+12 after removing the Z
+A plot of sequencing reads vs chromosome length has been produced (with and without the putative Z, if detected.)
+You may want to inspect it visually to confirm that it follows the expected pattern
+
+-----------------------------
+Warning: the depth of coverage deviates significantly from the expected value of half the autosomal sequencing depth
+Binomial test: p= 8.893182e-323 
+The sequencing depth of the Z is 0.5465039 times the depth of the other chromosomes
+Warning: a very elevated value here could indicate inaccurate read mapping
+null device 
+          1 

@@ -1,0 +1,40 @@
+Using a read length of 150 bp.
+Adjust second command line argument if this is not correct.
+The file being processed is idxstats_Alca_torda.txt 
+
+-----------------------------
+There are 5917 scaffolds in this dataset, with a total length of 1172164891 bp
+There are 180857390 mapped reads for this individual, for an average sequencing depth of 23.14402 X 
+The mean number of reads per chromosome is 30565.72 with a standard deviation of 109.521 
+The correlation between scaffold length and mapped reads is 0.9965744 
+The covariance between scaffold length and mapped reads is 2.926337e+12 
+
+-----------------------------
+
+Created a linear model of the relationship between scaffold length and mapped reads:
+
+Call:
+lm(formula = Mapped_Reads ~ Length, data = idxdata)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1019367    -2401    -2362    -2315  1920546 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 2.331e+03  6.974e+02   3.342 0.000835 ***
+Length      1.425e-01  1.538e-04 926.776  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 53600 on 5915 degrees of freedom
+Multiple R-squared:  0.9932,	Adjusted R-squared:  0.9932 
+F-statistic: 8.589e+05 on 1 and 5915 DF,  p-value: < 2.2e-16
+
+I could not find the Z chromosome. My closest guess is chr2 
+This is probably a male bird (or female mammal)
+You might want to investigate these scaffolds: chr8 chr13 chr14 chr15 chr16 chr17 chr18 chr20 chr21 VMED01000054.1 VWZL01004461.1  because they appear to be outliers
+
+-----------------------------
+null device 
+          1 

@@ -1,0 +1,40 @@
+Using a read length of 150 bp.
+Adjust second command line argument if this is not correct.
+The file being processed is idxstats_ANSK01.txt 
+
+-----------------------------
+There are 5917 scaffolds in this dataset, with a total length of 1172164891 bp
+There are 105225359 mapped reads for this individual, for an average sequencing depth of 13.46551 X 
+The mean number of reads per chromosome is 17783.57 with a standard deviation of 63.98178 
+The correlation between scaffold length and mapped reads is 0.9976494 
+The covariance between scaffold length and mapped reads is 1.7114e+12 
+
+-----------------------------
+
+Created a linear model of the relationship between scaffold length and mapped reads:
+
+Call:
+lm(formula = Mapped_Reads ~ Length, data = idxdata)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-438040   -1299   -1281   -1243  946197 
+
+Coefficients:
+             Estimate Std. Error  t value Pr(>|t|)    
+(Intercept) 1.271e+03  3.376e+02    3.766 0.000168 ***
+Length      8.335e-02  7.444e-05 1119.718  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 25940 on 5915 degrees of freedom
+Multiple R-squared:  0.9953,	Adjusted R-squared:  0.9953 
+F-statistic: 1.254e+06 on 1 and 5915 DF,  p-value: < 2.2e-16
+
+I could not find the Z chromosome. My closest guess is chr2 
+This is probably a male bird (or female mammal)
+You might want to investigate these scaffolds: chr14 chr15 chr16 chr17 chr20 chr21 VMED01000054.1 VWZL01000220.1 VWZL01006318.1 VWZL01005888.1  because they appear to be outliers
+
+-----------------------------
+null device 
+          1 
