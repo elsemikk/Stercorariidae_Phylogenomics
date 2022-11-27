@@ -1,0 +1,10 @@
+antarcticus	chilensis	maccormicki	0	0	0	0	0	0	0	0	0
+antarcticus	chilensis	pomarinus	0	0	0	0	0	0	0	0	0
+antarcticus	chilensis	skua	0	0	0	0	0	0	0	0	0
+antarcticus	maccormicki	pomarinus	0	0	0	0	0	0	0	0	0
+antarcticus	maccormicki	skua	0	0	0	0	0	0	0	0	0
+antarcticus	pomarinus	skua	0	0	0	0	0	0	0	0	0
+chilensis	maccormicki	pomarinus	0	0	0	0	0	0	0	0	0
+chilensis	maccormicki	skua	0	0	0	0	0	0	0	0	0
+chilensis	pomarinus	skua	0	0	0	0	0	0	0	0	0
+maccormicki	pomarinus	skua	0	0	0	0	0	0	0	0	0

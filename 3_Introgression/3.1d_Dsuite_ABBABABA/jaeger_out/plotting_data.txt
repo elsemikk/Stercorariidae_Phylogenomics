@@ -1,0 +1,11 @@
+P1	P2	P3	Dstatistic	p-value	f4-ratio
+chilensis	antarcticus	maccormicki	0.167581	0	0.19513
+antarcticus	chilensis	pomarinus	0.000755113	0.478375	0.000726137
+chilensis	antarcticus	skua	0.224115	0	0.147277
+maccormicki	antarcticus	pomarinus	0.0154146	0.121726	0.014327
+maccormicki	antarcticus	skua	0.2333	0	0.154029
+antarcticus	skua	pomarinus	0.0941472	2.74195e-16	0.110133
+maccormicki	chilensis	pomarinus	0.0155988	0.0663988	0.0170393
+maccormicki	chilensis	skua	0.0108905	0.244413	0.00761794
+chilensis	skua	pomarinus	0.0833469	2.12524e-10	0.107289
+maccormicki	skua	pomarinus	0.0943212	0	0.117502

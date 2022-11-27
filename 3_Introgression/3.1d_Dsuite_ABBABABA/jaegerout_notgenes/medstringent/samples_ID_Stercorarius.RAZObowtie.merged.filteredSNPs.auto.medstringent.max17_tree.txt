@@ -1,0 +1,11 @@
+P1	P2	P3	Dstatistic	Z-score	p-value	f4-ratio	BBAA	ABBA	BABA
+chilensis	antarcticus	maccormicki	nan	9.88131e-324	nan	-nan	0	0	0
+chilensis	antarcticus	pomarinus	nan	9.88131e-324	nan	-nan	0	0	0
+chilensis	antarcticus	skua	nan	9.88131e-324	nan	-nan	0	0	0
+maccormicki	antarcticus	pomarinus	nan	9.88131e-324	nan	-nan	0	0	0
+maccormicki	antarcticus	skua	nan	9.88131e-324	nan	-nan	0	0	0
+skua	antarcticus	pomarinus	nan	0	nan	-nan	0	0	0
+maccormicki	chilensis	pomarinus	nan	9.88131e-324	nan	-nan	0	0	0
+maccormicki	chilensis	skua	nan	9.88131e-324	nan	-nan	0	0	0
+skua	chilensis	pomarinus	nan	0	nan	-nan	0	0	0
+skua	maccormicki	pomarinus	nan	0	nan	-nan	0	0	0

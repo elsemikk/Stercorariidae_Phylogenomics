@@ -1,0 +1,469 @@
+---
+title: "3.2.2d_mtDNA_vs_nuclear_D3_distances"
+author: "Else Mikkelsen"
+date: "28/03/2022"
+output: html_document
+---
+
+This analysis aims to compare the mtDNA divergence between *S. pomarinus* and *S. skua* with the nuclear divergence. Is the mtDNA divergence shallower than expected, or is it within the distribution that we see in the nuclear genome? Since mtDNA and nuclear DNA have very different mutation rates, I am standardizing all divergence estimates by dividing them by the divergence between *S. pomarinus* and the small jaegers, to get a measure of relative divergence.  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '~/Documents/GitHub/Stercorarius/3_introgression/3.2.2d_mtDNA_vs_nuclear_distances')
+knitr::opts_chunk$set(cache = TRUE,  warning = FALSE, message = FALSE, cache.lazy = FALSE)
+
+#load required packages
+#load libraries
+library(tidyverse)
+library(RColorBrewer)
+library(zoo) #for rollmean function
+library(vroom)
+```
+
+First, I load some functions that I wrote to process the data. Note that some aspects are hard-coded for my particular dataset because the order of the columns is otherwise difficult to predict.  
+
+```{r load_functions}
+#load distance data
+load_distance <- function(file){
+  #read in the distance matrix
+  dists <- read.delim(file, sep="\t", header=F) #kimura 2-parameter distances
+  #dists <- vroom("allwindows.distmat", delim="\t", col_names=F) #faster way to read the data, but changes col names a bit
+  
+  #remove empty columns
+  emptycols <- sapply(dists, function (k) all(is.na(k))) #get a list of the columns that are empty
+  dists <- dists[!emptycols] #keep only the columns that are NOT empty
+  distsf <- dists[sapply(dists, is.numeric)]
+  #Now select the data that you are interested to plot. This requires manually determining which column contains your distance of interest.
+  dists_select <- NULL #start at empty dataframe
+  dists_select$locus <- dists$V1 #This column should contain the locus names
+  #Now manually specify the names of each comparison
+  dists_select$Alca_torda__Alca_torda <- distsf[,1]
+  dists_select$ANSK01__Alca_torda <- distsf[,2]
+  dists_select$ANSK7__Alca_torda <- distsf[,3]
+  dists_select$ANSK8__Alca_torda <- distsf[,4]
+  dists_select$Alca_torda__CHSK_MKP2451 <- distsf[,5]
+  dists_select$Alca_torda__CISK2 <- distsf[,6]
+  dists_select$Alca_torda__CISK3 <- distsf[,7]
+  dists_select$Alca_torda__CISK55 <- distsf[,8]
+  dists_select$Alca_torda__Fratercula_arctica <- distsf[,9]
+  dists_select$Alca_torda__GRSK_MKP1592 <- distsf[,10]
+  dists_select$Alca_torda__GRSK_MKP1593 <- distsf[,11]
+  dists_select$Alca_torda__LTJA_MKP990 <- distsf[,12]
+  dists_select$Alca_torda__PAJA_B20730 <- distsf[,13]
+  dists_select$Alca_torda__PAJA_USNM606730 <- distsf[,14]
+  dists_select$Alca_torda__POJA_4 <- distsf[,15]
+  dists_select$Alca_torda__POJA_IB2659 <- distsf[,16]
+  dists_select$Alca_torda__POJA_MKP1559 <- distsf[,17]
+  dists_select$Alca_torda__Uria_lomvia <- distsf[,18]
+  dists_select$ANSK01__ANSK01 <- distsf[,19]
+  dists_select$ANSK01__ANSK7 <- distsf[,20]
+  dists_select$ANSK01__ANSK8 <- distsf[,21]
+  dists_select$ANSK01__CHSK_MKP2451 <- distsf[,22]
+  dists_select$ANSK01__CISK2 <- distsf[,23]
+  dists_select$ANSK01__CISK3 <- distsf[,24]
+  dists_select$ANSK01__CISK55 <- distsf[,25]
+  dists_select$ANSK01__Fratercula_arctica <- distsf[,26]
+  dists_select$ANSK01__GRSK_MKP1592 <- distsf[,27]
+  dists_select$ANSK01__GRSK_MKP1593 <- distsf[,28]
+  dists_select$ANSK01__LTJA_MKP990 <- distsf[,29]
+  dists_select$ANSK01__PAJA_B20730 <- distsf[,30]
+  dists_select$ANSK01__PAJA_USNM606730 <- distsf[,31]
+  dists_select$ANSK01__POJA_4 <- distsf[,32]
+  dists_select$ANSK01__POJA_IB2659 <- distsf[,33]
+  dists_select$ANSK01__POJA_MKP1559 <- distsf[,34]
+  dists_select$ANSK01__Uria_lomvia <- distsf[,35]
+  dists_select$ANSK7__ANSK7 <- distsf[,36]
+  dists_select$ANSK7__ANSK8 <- distsf[,37]
+  dists_select$ANSK7__CHSK_MKP2451 <- distsf[,38]
+  dists_select$ANSK7__CISK2 <- distsf[,39]
+  dists_select$ANSK7__CISK3 <- distsf[,40]
+  dists_select$ANSK7__CISK55 <- distsf[,41]
+  dists_select$ANSK7__Fratercula_arctica <- distsf[,42]
+  dists_select$ANSK7__GRSK_MKP1592 <- distsf[,43]
+  dists_select$ANSK7__GRSK_MKP1593 <- distsf[,44]
+  dists_select$ANSK7__LTJA_MKP990 <- distsf[,45]
+  dists_select$ANSK7__PAJA_B20730 <- distsf[,46]
+  dists_select$ANSK7__PAJA_USNM606730 <- distsf[,47]
+  dists_select$ANSK7__POJA_4 <- distsf[,48]
+  dists_select$ANSK7__POJA_IB2659 <- distsf[,49]
+  dists_select$ANSK7__POJA_MKP1559 <- distsf[,50]
+  dists_select$ANSK7__Uria_lomvia <- distsf[,51]
+  dists_select$ANSK8__ANSK8 <- distsf[,52]
+  dists_select$ANSK8__CHSK_MKP2451 <- distsf[,53]
+  dists_select$ANSK8__CISK2 <- distsf[,54]
+  dists_select$ANSK8__CISK3 <- distsf[,55]
+  dists_select$ANSK8__CISK55 <- distsf[,56]
+  dists_select$ANSK8__Fratercula_arctica <- distsf[,57]
+  dists_select$ANSK8__GRSK_MKP1592 <- distsf[,58]
+  dists_select$ANSK8__GRSK_MKP1593 <- distsf[,59]
+  dists_select$ANSK8__LTJA_MKP990 <- distsf[,60]
+  dists_select$ANSK8__PAJA_B20730 <- distsf[,61]
+  dists_select$ANSK8__PAJA_USNM606730 <- distsf[,62]
+  dists_select$ANSK8__POJA_4 <- distsf[,63]
+  dists_select$ANSK8__POJA_IB2659 <- distsf[,64]
+  dists_select$ANSK8__POJA_MKP1559 <- distsf[,65]
+  dists_select$ANSK8__Uria_lomvia <- distsf[,66]
+  dists_select$CHSK_MKP2451__CHSK_MKP2451 <- distsf[,67]
+  dists_select$CHSK_MKP2451__CISK2 <- distsf[,68]
+  dists_select$CHSK_MKP2451__CISK3 <- distsf[,69]
+  dists_select$CHSK_MKP2451__CISK55 <- distsf[,70]
+  dists_select$CHSK_MKP2451__Fratercula_arctica <- distsf[,71]
+  dists_select$CHSK_MKP2451__GRSK_MKP1592 <- distsf[,72]
+  dists_select$CHSK_MKP2451__GRSK_MKP1593 <- distsf[,73]
+  dists_select$CHSK_MKP2451__LTJA_MKP990 <- distsf[,74]
+  dists_select$CHSK_MKP2451__PAJA_B20730 <- distsf[,75]
+  dists_select$CHSK_MKP2451__PAJA_USNM606730 <- distsf[,76]
+  dists_select$CHSK_MKP2451__POJA_4 <- distsf[,77]
+  dists_select$CHSK_MKP2451__POJA_IB2659 <- distsf[,78]
+  dists_select$CHSK_MKP2451__POJA_MKP1559 <- distsf[,79]
+  dists_select$CHSK_MKP2451__Uria_lomvia <- distsf[,80]
+  dists_select$CISK2__CISK2 <- distsf[,81]
+  dists_select$CISK2__CISK3 <- distsf[,82]
+  dists_select$CISK2__CISK55 <- distsf[,83]
+  dists_select$CISK2__Fratercula_arctica <- distsf[,84]
+  dists_select$CISK2__GRSK_MKP1592 <- distsf[,85]
+  dists_select$CISK2__GRSK_MKP1593 <- distsf[,86]
+  dists_select$CISK2__LTJA_MKP990 <- distsf[,87]
+  dists_select$CISK2__PAJA_B20730 <- distsf[,88]
+  dists_select$CISK2__PAJA_USNM606730 <- distsf[,89]
+  dists_select$CISK2__POJA_4 <- distsf[,90]
+  dists_select$CISK2__POJA_IB2659 <- distsf[,91]
+  dists_select$CISK2__POJA_MKP1559 <- distsf[,92]
+  dists_select$CISK2__Uria_lomvia <- distsf[,93]
+  dists_select$CISK3__CISK3 <- distsf[,94]
+  dists_select$CISK3__CISK55 <- distsf[,95]
+  dists_select$CISK3__Fratercula_arctica <- distsf[,96]
+  dists_select$CISK3__GRSK_MKP1592 <- distsf[,97]
+  dists_select$CISK3__GRSK_MKP1593 <- distsf[,98]
+  dists_select$CISK3__LTJA_MKP990 <- distsf[,99]
+  dists_select$CISK3__PAJA_B20730 <- distsf[,100]
+  dists_select$CISK3__PAJA_USNM606730 <- distsf[,101]
+  dists_select$CISK3__POJA_4 <- distsf[,102]
+  dists_select$CISK3__POJA_IB2659 <- distsf[,103]
+  dists_select$CISK3__POJA_MKP1559 <- distsf[,104]
+  dists_select$CISK3__Uria_lomvia <- distsf[,105]
+  dists_select$CISK55__CISK55 <- distsf[,106]
+  dists_select$CISK55__Fratercula_arctica <- distsf[,107]
+  dists_select$CISK55__GRSK_MKP1592 <- distsf[,108]
+  dists_select$CISK55__GRSK_MKP1593 <- distsf[,109]
+  dists_select$CISK55__LTJA_MKP990 <- distsf[,110]
+  dists_select$CISK55__PAJA_B20730 <- distsf[,111]
+  dists_select$CISK55__PAJA_USNM606730 <- distsf[,112]
+  dists_select$CISK55__POJA_4 <- distsf[,113]
+  dists_select$CISK55__POJA_IB2659 <- distsf[,114]
+  dists_select$CISK55__POJA_MKP1559 <- distsf[,115]
+  dists_select$CISK55__Uria_lomvia <- distsf[,116]
+  dists_select$Fratercula_arctica__Fratercula_arctica <- distsf[,117]
+  dists_select$Fratercula_arctica__GRSK_MKP1592 <- distsf[,118]
+  dists_select$Fratercula_arctica__GRSK_MKP1593 <- distsf[,119]
+  dists_select$Fratercula_arctica__LTJA_MKP990 <- distsf[,120]
+  dists_select$Fratercula_arctica__PAJA_B20730 <- distsf[,121]
+  dists_select$Fratercula_arctica__PAJA_USNM606730 <- distsf[,122]
+  dists_select$Fratercula_arctica__POJA_4 <- distsf[,123]
+  dists_select$Fratercula_arctica__POJA_IB2659 <- distsf[,124]
+  dists_select$Fratercula_arctica__POJA_MKP1559 <- distsf[,125]
+  dists_select$Fratercula_arctica__Uria_lomvia <- distsf[,126]
+  dists_select$GRSK_MKP1592__GRSK_MKP1592 <- distsf[,127]
+  dists_select$GRSK_MKP1592__GRSK_MKP1593 <- distsf[,128]
+  dists_select$GRSK_MKP1592__LTJA_MKP990 <- distsf[,129]
+  dists_select$GRSK_MKP1592__PAJA_B20730 <- distsf[,130]
+  dists_select$GRSK_MKP1592__PAJA_USNM606730 <- distsf[,131]
+  dists_select$GRSK_MKP1592__POJA_4 <- distsf[,132]
+  dists_select$GRSK_MKP1592__POJA_IB2659 <- distsf[,133]
+  dists_select$GRSK_MKP1592__POJA_MKP1559 <- distsf[,134]
+  dists_select$GRSK_MKP1592__Uria_lomvia <- distsf[,135]
+  dists_select$GRSK_MKP1593__GRSK_MKP1593 <- distsf[,136]
+  dists_select$GRSK_MKP1593__LTJA_MKP990 <- distsf[,137]
+  dists_select$GRSK_MKP1593__PAJA_B20730 <- distsf[,138]
+  dists_select$GRSK_MKP1593__PAJA_USNM606730 <- distsf[,139]
+  dists_select$GRSK_MKP1593__POJA_4 <- distsf[,140]
+  dists_select$GRSK_MKP1593__POJA_IB2659 <- distsf[,141]
+  dists_select$GRSK_MKP1593__POJA_MKP1559 <- distsf[,142]
+  dists_select$GRSK_MKP1593__Uria_lomvia <- distsf[,143]
+  dists_select$LTJA_MKP990__LTJA_MKP990 <- distsf[,144]
+  dists_select$LTJA_MKP990__PAJA_B20730 <- distsf[,145]
+  dists_select$LTJA_MKP990__PAJA_USNM606730 <- distsf[,146]
+  dists_select$LTJA_MKP990__POJA_4 <- distsf[,147]
+  dists_select$LTJA_MKP990__POJA_IB2659 <- distsf[,148]
+  dists_select$LTJA_MKP990__POJA_MKP1559 <- distsf[,149]
+  dists_select$LTJA_MKP990__Uria_lomvia <- distsf[,150]
+  dists_select$PAJA_B20730__PAJA_B20730 <- distsf[,151]
+  dists_select$PAJA_B20730__PAJA_USNM606730 <- distsf[,152]
+  dists_select$PAJA_B20730__POJA_4 <- distsf[,153]
+  dists_select$PAJA_B20730__POJA_IB2659 <- distsf[,154]
+  dists_select$PAJA_B20730__POJA_MKP1559 <- distsf[,155]
+  dists_select$PAJA_B20730__Uria_lomvia <- distsf[,156]
+  dists_select$PAJA_USNM606730__PAJA_USNM606730 <- distsf[,157]
+  dists_select$PAJA_USNM606730__POJA_4 <- distsf[,158]
+  dists_select$PAJA_USNM606730__POJA_IB2659 <- distsf[,159]
+  dists_select$PAJA_USNM606730__POJA_MKP1559 <- distsf[,160]
+  dists_select$PAJA_USNM606730__Uria_lomvia <- distsf[,161]
+  dists_select$POJA_4__POJA_4 <- distsf[,162]
+  dists_select$POJA_4__POJA_IB2659 <- distsf[,163]
+  dists_select$POJA_4__POJA_MKP1559 <- distsf[,164]
+  dists_select$POJA_4__Uria_lomvia <- distsf[,165]
+  dists_select$POJA_IB2659__POJA_IB2659 <- distsf[,166]
+  dists_select$POJA_IB2659__POJA_MKP1559 <- distsf[,167]
+  dists_select$POJA_IB2659__Uria_lomvia <- distsf[,168]
+  dists_select$POJA_MKP1559__POJA_MKP1559 <- distsf[,169]
+  dists_select$POJA_MKP1559__Uria_lomvia <- distsf[,170]
+
+  dists_select <- as.data.frame(dists_select) %>% 
+       separate(locus, c("chromosome", "start", "end"), "_")
+  return(dists_select)
+}
+
+#load missingness matrix
+load_missingness <- function(file) {
+  #dataset <- read.delim(file, sep="\t", header=F) #read the data
+  dataset <- vroom(file, delim="\t", col_names=F, skip = 0) #read the data
+  formatted <- as_tibble(t(dataset)) %>% #transpose rows to columns
+  rename(locus = V1, Alca_torda = V2, ANSK01 = V3, ANSK7 = V4, ANSK8 = V5, CHSK_MKP2451 = V6, CISK2 = V7, CISK3 = V8, CISK55 = V9, Fratercula_arctica = V10, GRSK_MKP1592 = V11, GRSK_MKP1593 = V12, LTJA_MKP990 = V13, PAJA_B20730 = V14, PAJA_USNM606730 = V15, POJA_4 = V16, POJA_IB2659 = V17, POJA_MKP1559 = V18, Uria_lomvia = V19) %>% #rename columns
+      mutate(locus = str_replace(locus, "^.*/", ""))  %>% #remove file path from locus name
+     separate(locus, c("chromosome", "start", "end"), "_") #split chromosome from position
+  return(formatted)
+}
+
+#standardize the divergence estimates
+make_mttest <- function(dists_selecte_mtchunks){
+   #First, calculate distance between POJA/CHSK standardized by POJA/LTJA
+   dists_mttest <- NULL
+   dists_mttest$chromosome <- dists_selecte_mtchunks$chromosome
+   dists_mttest$start <- dists_selecte_mtchunks$start
+   dists_mttest$end <- dists_selecte_mtchunks$end
+
+	dists_mttest$ANSK7__POJA_4.cor <- dists_selecte_mtchunks$ANSK7__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$ANSK7__POJA_IB2659.cor <- dists_selecte_mtchunks$ANSK7__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$ANSK7__POJA_MKP1559.cor <- dists_selecte_mtchunks$ANSK7__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$ANSK8__POJA_4.cor <- dists_selecte_mtchunks$ANSK8__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$ANSK8__POJA_IB2659.cor <- dists_selecte_mtchunks$ANSK8__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$ANSK8__POJA_MKP1559.cor <- dists_selecte_mtchunks$ANSK8__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$ANSK01__POJA_4.cor <- dists_selecte_mtchunks$ANSK01__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$ANSK01__POJA_IB2659.cor <- dists_selecte_mtchunks$ANSK01__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$ANSK01__POJA_MKP1559.cor <- dists_selecte_mtchunks$ANSK01__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$CISK2__POJA_4.cor <- dists_selecte_mtchunks$CISK2__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$CISK2__POJA_IB2659.cor <- dists_selecte_mtchunks$CISK2__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$CISK2__POJA_MKP1559.cor <- dists_selecte_mtchunks$CISK2__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$CISK3__POJA_4.cor <- dists_selecte_mtchunks$CISK3__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$CISK3__POJA_IB2659.cor <- dists_selecte_mtchunks$CISK3__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$CISK3__POJA_MKP1559.cor <- dists_selecte_mtchunks$CISK3__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$CISK55__POJA_4.cor <- dists_selecte_mtchunks$CISK55__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$CISK55__POJA_IB2659.cor <- dists_selecte_mtchunks$CISK55__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$CISK55__POJA_MKP1559.cor <- dists_selecte_mtchunks$CISK55__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$CHSK_MKP2451__POJA_4.cor <- dists_selecte_mtchunks$CHSK_MKP2451__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$CHSK_MKP2451__POJA_IB2659.cor <- dists_selecte_mtchunks$CHSK_MKP2451__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$CHSK_MKP2451__POJA_MKP1559.cor <- dists_selecte_mtchunks$CHSK_MKP2451__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$GRSK_MKP1592__POJA_4.cor <- dists_selecte_mtchunks$GRSK_MKP1592__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$GRSK_MKP1592__POJA_IB2659.cor <- dists_selecte_mtchunks$GRSK_MKP1592__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$GRSK_MKP1592__POJA_MKP1559.cor <- dists_selecte_mtchunks$GRSK_MKP1592__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+	dists_mttest$GRSK_MKP1593__POJA_4.cor <- dists_selecte_mtchunks$GRSK_MKP1593__POJA_4/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+	dists_mttest$GRSK_MKP1593__POJA_IB2659.cor <- dists_selecte_mtchunks$GRSK_MKP1593__POJA_IB2659/dists_selecte_mtchunks$PAJA_B20730__POJA_IB2659
+	dists_mttest$GRSK_MKP1593__POJA_MKP1559.cor <- dists_selecte_mtchunks$GRSK_MKP1593__POJA_MKP1559/dists_selecte_mtchunks$PAJA_B20730__POJA_MKP1559
+  dists_mttest$ANSK01__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$ANSK01__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$ANSK01__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$ANSK01__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$ANSK7__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$ANSK7__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$ANSK7__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$ANSK7__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$ANSK8__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$ANSK8__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$ANSK8__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$ANSK8__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CHSK_MKP2451__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$CHSK_MKP2451__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CHSK_MKP2451__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$CHSK_MKP2451__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK2__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$CISK2__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK2__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$CISK2__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK3__GRSK_MKP1592.cor <-   dists_selecte_mtchunks$CISK3__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK3__GRSK_MKP1593.cor <-   dists_selecte_mtchunks$CISK3__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK55__GRSK_MKP1592.cor <-    dists_selecte_mtchunks$CISK55__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$CISK55__GRSK_MKP1593.cor <-    dists_selecte_mtchunks$CISK55__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$GRSK_MKP1592__GRSK_MKP1592.cor <-    dists_selecte_mtchunks$GRSK_MKP1592__GRSK_MKP1592/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$GRSK_MKP1592__GRSK_MKP1593.cor <-    dists_selecte_mtchunks$GRSK_MKP1592__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4
+  dists_mttest$GRSK_MKP1593__GRSK_MKP1593.cor <-    dists_selecte_mtchunks$GRSK_MKP1593__GRSK_MKP1593/dists_selecte_mtchunks$PAJA_B20730__POJA_4	
+	dists_mttest <- as.data.frame(dists_mttest)
+	return(dists_mttest)
+}
+
+```
+
+Next, I load the data.  
+```{r load_data, warning=FALSE}
+#load the data
+dists_selecte_mtchunks <- load_distance("17kbwindows.distmat")
+
+#load missingness
+missingness <- load_missingness("chunk.missingness")
+
+#merge distances and missingness into a single dataframe
+dists_select_mtchunks <- merge(dists_selecte_mtchunks, as.data.frame(missingness), by=c("chromosome","start", "end"))
+#filter the dataset by removing sites that have more than 1002 bp missing data in any focal sample (Catharacta, S. pomarinus, PAJA_B20730)
+dists_select_mtchunks <- dists_select_mtchunks %>%
+  filter(as.numeric(ANSK01)<1002 & as.numeric(ANSK7)<1002 & as.numeric(ANSK8)<1002 & as.numeric(CISK3)<1002 & as.numeric(CISK55)<1002 & as.numeric(CISK2)<1002 & as.numeric(GRSK_MKP1592)<1002 & as.numeric(GRSK_MKP1593)<1002 & as.numeric(CHSK_MKP2451)<1002 & as.numeric(POJA_4)<1002 & as.numeric(POJA_MKP1559)<1002 & as.numeric(POJA_IB2659)<1002 & as.numeric(PAJA_B20730)<1002)
+
+#format the data
+dists_mttest <- make_mttest(dists_select_mtchunks)
+```
+
+## Calculate relative mtDNA divergences  
+
+Now, I am making two vectors to hold the mtDNA relative divergences. The first is 21 estimates of relative divergence between *S. pomarinus* and the southern hemisphere skuas (3 *S. pomarinus* times 7 Southern skuas). The next is 6 estimates of relative divergence between *S. pomarinus* and *S. skua* (3 *S. pomarinus* times 2 *S. skua*).
+```{r calc}
+pomarinus_vs_southern <- as.numeric(c("0.167657551", "0.168846611", "0.171224732", "0.161712247", "0.171224732", "0.171224732", "0.172413793", "0.158463385", "0.162064826", "0.164465786", "0.153661465", "0.163265306", "0.163265306", "0.164465786", "0.157451923", "0.158653846", "0.161057692", "0.155048077", "0.161057692", "0.161057692", "0.162259615"))
+pomarinus_vs_Sskua <- as.numeric(c("0.07372176", "0.076099881", "0.068427371", "0.070828331", "0.064903846", "0.066105769"))
+pomarinus_vs_southern_mean <- mean(pomarinus_vs_southern)
+pomarinus_vs_Sskua_mean <- mean(pomarinus_vs_Sskua)
+
+pomarinus_vs_southern_mean
+pomarinus_vs_Sskua_mean
+```
+
+The mitochondrial divergence between *S. pomarinus* and *S. skua* is much lower than between *S. pomarinus* and the southern hemisphere *Catharacta*.  
+
+## Plot nuclear divergence distributions  
+
+Next, I can look at the distributions of relative divergence for various combinations of taxa. I want to ensure that these distributions are not different depending on which *S. pomarinus* sample I am looking at, and that none of the samples have shifted distributions. They all look the same. Note that they might not all look the same if I had not filtered the blocks for missing data.   
+```{r plot_single, message=FALSE, warning=FALSE}
+#select the pair of interest to plot
+#selected_pairs <- c("ANSK7__POJA_4.cor", "ANSK8__POJA_4.cor", "ANSK01__POJA_4.cor", "CISK2__POJA_4.cor", "CISK3__POJA_4.cor", "CISK55__POJA_4.cor", "CHSK_MKP2451__POJA_4.cor", "GRSK_MKP1592__POJA_4.cor", "GRSK_MKP1593__POJA_4.cor")
+#selected_pairs <- c("ANSK7__POJA_IB2659.cor", "ANSK8__POJA_IB2659.cor", "ANSK01__POJA_IB2659.cor", "CISK2__POJA_IB2659.cor", "CISK3__POJA_IB2659.cor", "CISK55__POJA_IB2659.cor", "CHSK_MKP2451__POJA_IB2659.cor", "GRSK_MKP1592__POJA_IB2659.cor", "GRSK_MKP1593__POJA_IB2659.cor")
+selected_pairs <- c( "ANSK7__POJA_MKP1559.cor", "ANSK8__POJA_MKP1559.cor", "ANSK01__POJA_MKP1559.cor", "CISK2__POJA_MKP1559.cor", "CISK3__POJA_MKP1559.cor", "CISK55__POJA_MKP1559.cor", "CHSK_MKP2451__POJA_MKP1559.cor", "GRSK_MKP1592__POJA_MKP1559.cor", "GRSK_MKP1593__POJA_MKP1559.cor")
+
+ 
+#Then, plot these distributions
+as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 4:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      filter(!grepl('chrZ', chromosome)) %>% #remove chrZ, since it might have different dynamics than autosomes
+      ggplot(aes(xcolor = pair))+
+      geom_density(aes(x=distance),alpha=0.5,colour="gray75", fill="gray75")+
+      theme_classic()+ #simplify plot
+      theme(axis.text.y = element_text(family="Times", face="plain", colour="black", size=10), axis.text.x = element_text(family="Times", face="plain", colour="black", size=10), axis.title.x = element_text(family="Times", face="plain", colour="black", size=14), axis.title.y = element_text(family="Times", face="plain", colour="black", size=14), legend.text = element_text(family="Times", face="italic", colour="black", size=10), legend.title = element_text(family="Times", face="plain", colour="black", size=12))+
+      scale_x_continuous(expand = c(0, 0), limits = c(0, 0.75)) + #make sure that the origin is at 0,0
+      scale_y_continuous(expand = c(0, 0), limits = c(0, NA))+
+      xlab("Relative Genetic distance")+
+      ylab("Density of 5-kb Windows")+
+      geom_vline(xintercept = pomarinus_vs_southern, linetype="dashed", color = "black")+ #add a horizonatal line to mark the mtDNA observation
+      geom_vline(xintercept = pomarinus_vs_Sskua, linetype="dashed", color = "red") #add a horizonatal line to mark the mtDNA observation
+
+
+```
+
+Now, we can plot all 30 distributions overlapping, with the mtDNA divergences marked as red or black lines.
+```{r plot_multi, message=FALSE, warning=FALSE}
+selected_pairs <- c("ANSK7__POJA_4.cor", "ANSK8__POJA_4.cor", "ANSK01__POJA_4.cor", "CISK2__POJA_4.cor", "CISK3__POJA_4.cor", "CISK55__POJA_4.cor", "CHSK_MKP2451__POJA_4.cor", "GRSK_MKP1592__POJA_4.cor", "GRSK_MKP1593__POJA_4.cor", "ANSK7__POJA_IB2659.cor", "ANSK8__POJA_IB2659.cor", "ANSK01__POJA_IB2659.cor", "CISK2__POJA_IB2659.cor", "CISK3__POJA_IB2659.cor", "CISK55__POJA_IB2659.cor", "CHSK_MKP2451__POJA_IB2659.cor", "GRSK_MKP1592__POJA_IB2659.cor", "GRSK_MKP1593__POJA_IB2659.cor", "ANSK7__POJA_MKP1559.cor", "ANSK8__POJA_MKP1559.cor", "ANSK01__POJA_MKP1559.cor", "CISK2__POJA_MKP1559.cor", "CISK3__POJA_MKP1559.cor", "CISK55__POJA_MKP1559.cor", "CHSK_MKP2451__POJA_MKP1559.cor", "GRSK_MKP1592__POJA_MKP1559.cor", "GRSK_MKP1593__POJA_MKP1559.cor")
+
+#This will plot distributions of POJA to all four skuas, overlapping
+as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 4:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      filter(!grepl('chrZ', chromosome)) %>% #remove chrZ, since it might have different dynamics than autosomes
+      ggplot(aes(xcolor = pair))+
+      geom_density(aes(x=distance),alpha=0.2,colour="gray75", fill="gray75")+
+      theme_classic()+ #simplify plot
+      theme(axis.text.y = element_text(family="Times", face="plain", colour="black", size=10), axis.text.x = element_text(family="Times", face="plain", colour="black", size=10), axis.title.x = element_text(family="Times", face="plain", colour="black", size=14), axis.title.y = element_text(family="Times", face="plain", colour="black", size=14), legend.text = element_text(family="Times", face="italic", colour="black", size=10), legend.title = element_text(family="Times", face="plain", colour="black", size=12))+
+      scale_x_continuous(expand = c(0, 0), limits = c(0, 0.75)) + #make sure that the origin is at 0,0
+      scale_y_continuous(expand = c(0, 0), limits = c(0, NA))+
+      xlab("Relative Genetic distance")+
+      ylab("Density of 17-kb Windows")+
+      geom_vline(xintercept = pomarinus_vs_southern, linetype="dashed", color = "black")+ #add a vertical line to mark the mtDNA observation
+      geom_vline(xintercept = pomarinus_vs_Sskua, linetype="dashed", color = "red") #add a vertical line to mark the mtDNA observation
+
+#save the figure
+#ggsave("mtDNA_vs_nuclear_divergence.pdf", width=3456, height=2234, units="px")
+
+```
+Finally, let's calculate how much of the grey (nuclear) distribution falls below the black or red lines.
+```{r percentages}
+#select which comparisons to look at
+#selected_pairs <- c("ANSK7__POJA_4.cor", "ANSK8__POJA_4.cor", "ANSK01__POJA_4.cor", "CISK2__POJA_4.cor", "CISK3__POJA_4.cor", "CISK55__POJA_4.cor", "CHSK_MKP2451__POJA_4.cor", "GRSK_MKP1592__POJA_4.cor", "GRSK_MKP1593__POJA_4.cor")
+#selected_pairs <- c("ANSK7__POJA_IB2659.cor", "ANSK8__POJA_IB2659.cor", "ANSK01__POJA_IB2659.cor", "CISK2__POJA_IB2659.cor", "CISK3__POJA_IB2659.cor", "CISK55__POJA_IB2659.cor", "CHSK_MKP2451__POJA_IB2659.cor", "GRSK_MKP1592__POJA_IB2659.cor", "GRSK_MKP1593__POJA_IB2659.cor")
+#selected_pairs <- c( "ANSK7__POJA_MKP1559.cor", "ANSK8__POJA_MKP1559.cor", "ANSK01__POJA_MKP1559.cor", "CISK2__POJA_MKP1559.cor", "CISK3__POJA_MKP1559.cor", "CISK55__POJA_MKP1559.cor", "CHSK_MKP2451__POJA_MKP1559.cor", "GRSK_MKP1592__POJA_MKP1559.cor", "GRSK_MKP1593__POJA_MKP1559.cor")
+selected_pairs <- c("ANSK7__POJA_4.cor", "ANSK8__POJA_4.cor", "ANSK01__POJA_4.cor", "CISK2__POJA_4.cor", "CISK3__POJA_4.cor", "CISK55__POJA_4.cor", "CHSK_MKP2451__POJA_4.cor", "GRSK_MKP1592__POJA_4.cor", "GRSK_MKP1593__POJA_4.cor", "ANSK7__POJA_IB2659.cor", "ANSK8__POJA_IB2659.cor", "ANSK01__POJA_IB2659.cor", "CISK2__POJA_IB2659.cor", "CISK3__POJA_IB2659.cor", "CISK55__POJA_IB2659.cor", "CHSK_MKP2451__POJA_IB2659.cor", "GRSK_MKP1592__POJA_IB2659.cor", "GRSK_MKP1593__POJA_IB2659.cor", "ANSK7__POJA_MKP1559.cor", "ANSK8__POJA_MKP1559.cor", "ANSK01__POJA_MKP1559.cor", "CISK2__POJA_MKP1559.cor", "CISK3__POJA_MKP1559.cor", "CISK55__POJA_MKP1559.cor", "CHSK_MKP2451__POJA_MKP1559.cor", "GRSK_MKP1592__POJA_MKP1559.cor", "GRSK_MKP1593__POJA_MKP1559.cor")
+
+#determine how much of the distrinution is below the red line
+a<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 4:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      filter(distance<=pomarinus_vs_Sskua_mean)%>%
+      nrow()
+#count total number of windows
+b<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 2:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      nrow()
+#get fraction
+a/b
+#0.004378763 with 17 kb windows, all pomarinus
+#0.007550146 Alaskan
+#0.004427058 IB2659
+#0.004926108 4
+
+#determine how much of the distribution is below the black line
+a<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 2:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      filter(distance<=pomarinus_vs_southern_mean)%>%
+      nrow()
+#count total number of windows
+b<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 2:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      nrow()
+#get fraction
+a/b
+#0.2110821 with 17 kb windows, all pomarinus
+#0.3129206 Alaskan
+#0.2123378 IB2659
+#0.2115812 4
+```
+
+
+A large portion of the genome (21%) falls below the black line, so the mitochondrial divergences between *S. pomarinus* and the southern hemisphere *Catharacta* are not different than expected based on nuclear divergence. However, very little (0.4%) of the genome falls below the red line, so the mitochondrial divergences between *S. pomarinus* and *S. skua* are lower than expected.
+
+
+# Test directionality
+The mitochondrial divergence between the *S. skua*/*S. pomarinus* clade and the southern hemisphere skuas is much older than the estimated divergence between *S. skua* and the southern hemisphere skuas, so we can reason that the direction of introgression was more likely from *S. pomarinus* into *S. skua*. However, incomplete lineage sorting can of course allow many gene trees to divergence earlier than the speciation event. But do the mitochondrial haplotypes diverge more deeply than expected under ILS? We can compare the mitochondrial estimate to the nuclear distribution.
+
+```{r directionality}
+selected_pairs <- c("ANSK01__GRSK_MKP1592.cor", "ANSK01__GRSK_MKP1593.cor", "ANSK7__GRSK_MKP1592.cor", "ANSK7__GRSK_MKP1593.cor", "ANSK8__GRSK_MKP1592.cor", "ANSK8__GRSK_MKP1593.cor", "CHSK_MKP2451__GRSK_MKP1592.cor", "CHSK_MKP2451__GRSK_MKP1593.cor", "CISK2__GRSK_MKP1592.cor", "CISK2__GRSK_MKP1593.cor", "CISK3__GRSK_MKP1592.cor", "CISK3__GRSK_MKP1593.cor", "CISK55__GRSK_MKP1592.cor", "CISK55__GRSK_MKP1593.cor")
+
+Sskua_vs_southern <- as.numeric(c("0.170114943", "0.162068966", "0.170114943", "0.170114943", "0.171264368", "0.172413793", "0.167816092", "0.170114943", "0.163218391", "0.170114943", "0.171264368", "0.170114943", "0.173563218", "0.168965517"))
+Sskua_vs_southern_mean <- mean(Sskua_vs_southern)
+Sskua_vs_southern_mean
+
+#Then, plot these distributions
+as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 4:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      filter(!grepl('chrZ', chromosome)) %>% #remove chrZ, since it might have different dynamics than autosomes
+      ggplot(aes(xcolor = pair))+
+      geom_density(aes(x=distance),alpha=0.5,colour="gray75", fill="gray75")+
+      theme_classic()+ #simplify plot
+      theme(axis.text.y = element_text(family="Times", face="plain", colour="black", size=10), axis.text.x = element_text(family="Times", face="plain", colour="black", size=10), axis.title.x = element_text(family="Times", face="plain", colour="black", size=14), axis.title.y = element_text(family="Times", face="plain", colour="black", size=14), legend.text = element_text(family="Times", face="italic", colour="black", size=10), legend.title = element_text(family="Times", face="plain", colour="black", size=12))+
+      scale_x_continuous(expand = c(0, 0), limits = c(0, 0.75)) + #make sure that the origin is at 0,0
+      scale_y_continuous(expand = c(0, 0), limits = c(0, NA))+
+      xlab("Relative Genetic distance")+
+      ylab("Density of 5-kb Windows")+
+      geom_vline(xintercept = Sskua_vs_southern, linetype="dashed", color = "black")+ #add a horizonatal line to mark the mtDNA observation
+      geom_vline(xintercept = pomarinus_vs_Sskua, linetype="dashed", color = "red") #add a horizonatal line to mark the mtDNA observation
+
+#determine how much of the distribution is below the black line
+c<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 2:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      filter(distance>=Sskua_vs_southern_mean)%>%
+      nrow()
+#count total number of windows
+d<-as.data.frame(dists_mttest) %>% 
+      tidyr::gather("pair", "distance", 2:length(dists_mttest)) %>%
+      filter(pair %in% selected_pairs) %>% #
+      #filter(!grepl('chrZ', chromosome)) %>% #
+      nrow()
+#get fraction
+c/d
+
+```
+
+The black line is higher than 69% of the distribution, lower than 31%. Since it falls within the overlap of the divergence between *S. skua* and the southern hemisphere skuas (on the upper end) and the divergence between *S. pomarinus* and the southern hemisphere skuas (on the lower end), the relative sequence divergence is not informative in this case.  
+

@@ -1,0 +1,13 @@
+branch	branch_descendants	Outgroup	parasiticus	longicaudus	pomarinus	skua	maccormicki	antarcticus	chilensis
+b2	parasiticus,longicaudus	nan	nan	nan	nan	nan	nan	nan	nan
+b3	pomarinus,skua,maccormicki,antarcticus,chilensis	nan	nan	nan	nan	nan	nan	nan	nan
+b4	parasiticus	nan	nan	nan	0	0	0	0	0
+b5	longicaudus	nan	nan	nan	0	0	0	0	0
+b6	pomarinus	nan	0.00134797	0.00156308	nan	nan	nan	nan	nan
+b7	skua,maccormicki,antarcticus,chilensis	nan	0	0	nan	nan	nan	nan	nan
+b8	skua	nan	0	0	0.0999921	nan	nan	nan	nan
+b9	maccormicki,antarcticus,chilensis	nan	0	0	0	nan	nan	nan	nan
+b10	maccormicki	nan	0	0	0	0	nan	nan	nan
+b11	antarcticus,chilensis	nan	0	0	0	0	nan	nan	nan
+b12	antarcticus	nan	0	0	0	0.14856	0.19411	nan	nan
+b13	chilensis	nan	0	0	0	0	0	nan	nan

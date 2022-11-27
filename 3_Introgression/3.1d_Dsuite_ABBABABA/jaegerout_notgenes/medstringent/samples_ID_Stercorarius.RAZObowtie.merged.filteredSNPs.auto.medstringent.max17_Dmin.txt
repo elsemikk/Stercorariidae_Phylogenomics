@@ -1,0 +1,11 @@
+P1	P2	P3	Dstatistic	Z-score	p-value	f4-ratio	BBAA	ABBA	BABA
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			
+						-nan			

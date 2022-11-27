@@ -1,0 +1,9 @@
+branch	branch_descendants	Outgroup	pomarinus	skua	maccormicki	antarcticus	chilensis
+b2	pomarinus	nan	nan	nan	nan	nan	nan
+b3	skua,maccormicki,antarcticus,chilensis	nan	nan	nan	nan	nan	nan
+b4	skua	nan	0.121645	nan	nan	nan	nan
+b5	maccormicki,antarcticus,chilensis	nan	0	nan	nan	nan	nan
+b6	maccormicki	nan	0	0	nan	nan	nan
+b7	antarcticus,chilensis	nan	0	0	nan	nan	nan
+b8	antarcticus	nan	0	0.154313	0.207463	nan	nan
+b9	chilensis	nan	0	0	0	nan	nan

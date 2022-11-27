@@ -1,0 +1,216 @@
+---
+title: "Dinvestigate"
+author: "Else Mikkelsen"
+date: "`r format(Sys.time(), '%d %B, %Y, %H:%M')`"
+output: html_document
+---
+
+In this analysis, I will generate figures from the genome scan I performed with Dinvestigate in the [Dsuite](https://github.com/millanek/Dsuite) package. This genome scan is based on a dataset of SNPs for my Stercorariid samples, and calculates three statistics: *f*~d~, *f*~dM~, and *d*~f~. Each of these three statistics is essentially trying to estimate the same thing - introgression across the genome, but with slightly different formulas that give them slightly different strengths and weaknesses. For example, *f*~d~ is not symmetrically distributed around 0 under conditions of no introgression: it can reach arbitrarily low negative values which are not meaningful. In contrast, the negative values of *f*~dM~ are meaningful.
+
+## Setup
+First, set up the environment by loading packages:
+```{r setup, include=TRUE, message=FALSE, warning=FALSE}
+#This document was originally written 05/02/2022 and updated with the final edits in July 2022
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '~/Documents/GitHub/Stercorarius/3_Introgression/3.1d_Dsuite_ABBABABA')
+
+#load required packages
+#load libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(zoo) #for rollmean function
+```
+
+Then, load a custom plotting function:
+```{r functions}
+#This function will make the line plots. It takes 6 arguments. The first three list the datasets that you want to plot (which are the output of Dsuite Dinvestigate, having a column chr listing chromosome, windowStart listing the position on the chromosome, and d_f and f_dM listing estimates of these statistics). If you want to plot only 1 or 2 datasets instead of 3, just list the same dataset multiple times. Then you give the max y limit - I would set it to 1 because that is the max value of f, or if you can't see enough detail and want to zoom in you can set it lower. Then set the number of windows to combine in your sliding window to control the noisiness, and then the name or part of the name of the chromosomes you want to plot. If you want to plot all of them, you can just put "".
+ABBABABA.plotduo = function(Data, Data2, Data3, Data4, maxy, windows, chromosome, df) {
+ as.data.frame(Data) %>% 
+  filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+  mutate(chr = factor(chr, levels = chromosomes)) %>%
+  ggplot(., aes(x = as.numeric(windowStart)/1000000, y = f_dM))+ #set up the ggplot
+  theme_classic()+ #simplify plot
+  #theme(axis.text.y = element_text(family="Times", face="plain", colour="black", size=10), axis.title.x = element_text(family="Times", face="plain", colour="black", size=14), axis.title.y = element_text(family="Times", face="plain", colour="black", size=14), legend.text = element_text(family="Times", face="italic", colour="black", size=10), legend.title = element_text(family="Times", face="plain", colour="black", size=12))+ #define the text fonts and sizes for presentation purposes
+  theme(strip.background = element_blank(), axis.ticks.x=element_blank(), axis.line.x=element_blank())+ #simplify plot, remove title for presentation purposes as it is a distraction and redundant with a caption
+  #theme(strip.text.x = element_blank(), axis.text.x=element_blank())+ #simplify plot, remove title for presentation purposes as it is a distraction and redundant with a caption  
+  xlab("Genomic Position")+ #write x axis label
+  ylab("f_d")+ #write y axis label
+  labs(fill = "Species Pair", colour="Species Pair")+ #make the fill and colour labels the same so there is only 1 legend
+  facet_grid(~ chr, scales = "free", space="free", drop=T, shrink=T)+ #plot each chromosome separately
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) + #make sure that the origin is at 0,0
+  scale_y_continuous(expand = c(0, 0), limits = c(NA, maxy))+ #make sure that the origin is at 0,0, and make y axis go to a certain appropriate value
+  geom_hline(aes(yintercept=0))+ #make the x axis go through zero to better tell when a value is negative
+  {if (df==TRUE)geom_line(data = . %>%
+    	mutate(f_dM = rollmean(d_f, windows, align = "right", fill = NA)), alpha=0.2, color="#7570B3")}+ #change the number of windows used in the rolling mean to control how much bumpy detail is shown by the line. I found that with 100 it looks good, but with 1 it looks like a fuzzy caterpiller and the trends are difficult to discern.
+  {if (df==TRUE)geom_line(data =  Data2 %>%
+   	 filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+  	  mutate(f_dM = rollmean(d_f, windows, align = "right", fill = NA)), alpha=0.2, color="#D95F02")}+ #change the number of 
+  {if (df==TRUE)geom_line(data =  Data3 %>%
+    	filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+    	mutate(f_dM = rollmean(d_f, windows, align = "right", fill = NA)), alpha=0.2, color="#000000")}+ #change the number of
+  {if (df==TRUE)geom_line(data =  Data4 %>%
+   	 filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+    	mutate(f_dM = rollmean(d_f, windows, align = "right", fill = NA)), alpha=0.2, color="#1B9E77")}+ #change the number of
+  geom_line(data = . %>%
+    mutate(f_dM = rollmean(f_dM, windows, align = "right", fill = NA)), alpha=1, color="#7570B3")+ #change the number of windows used in the rolling mean to control how much bumpy detail is shown by the line. I found that with 100 it looks good, but with 1 it looks like a fuzzy caterpiller and the trends are difficult to discern.
+  geom_line(data =  Data2 %>%
+    filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+    mutate(chr = factor(chr, levels = chromosomes)) %>%
+    mutate(f_dM = rollmean(f_dM, windows, align = "right", fill = NA)), alpha=1, color="#D95F02")+ #change the number of 
+  geom_line(data =  Data3 %>%
+    filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+    mutate(chr = factor(chr, levels = chromosomes)) %>%
+    mutate(f_dM = rollmean(f_dM, windows, align = "right", fill = NA)), alpha=1, color="#000000")+ #change the number of
+   geom_line(data =  Data4 %>%
+    filter(grepl(chromosome, chr)) %>% #filter to keep only proper chromosomes (not the unplaced VMED scaffolds)
+    mutate(chr = factor(chr, levels = chromosomes)) %>%
+    mutate(f_dM = rollmean(f_dM, windows, align = "right", fill = NA)), alpha=1, color="#1B9E77") #change the number of
+}
+
+```
+
+Then, load the data. These are the data generated by Dinvestigate, which outputs text files with seven tab-delimited columns: chr (chromosome),  windowStart (start position of window), windowEnd (end position of window), D, f_d, f_dM, and d_f. Note that D is included, but it is generally not recommended to use a genome scan of D to identify putatively introgressed windows.
+
+```{r dsuite}
+#make chromosomes a factor, ordered in the order that I would like them to be plotted in:
+chromosomes<- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chr23", "chr24", "chr25", "chrZ") #All autosomes
+
+#This dataset (Stercorarius.RAZObowtie.merged.filteredSNPs.auto.medstringent.max17.vcf.gz) has been filtered the same as the ABBA BABA dataset but with no missing data filter. The autosomes have min genotype depth of 6X and the Z chromosome has min genotype depth of 3X (because most samples are females, which aer hemizygous for chrZ/chrW)
+antarcticus_skua_pomarinus.medstringent <- read.delim("./Dinvestigate_medstringent/antarcticus_skua_pomarinus_localFstats_all.antarcticus.skua.pomarinus_50_50.txt")
+chilensis_skua_pomarinus.medstringent <- read.delim("./Dinvestigate_medstringent/chilensis_skua_pomarinus_localFstats_all.chilensis.skua.pomarinus_50_50.txt")
+maccormicki_skua_pomarinus.medstringent <- read.delim("./Dinvestigate_medstringent/maccormicki_skua_pomarinus_localFstats_all.maccormicki.skua.pomarinus_50_50.txt")
+chilensis_antarcticus_skua.medstringent <- read.delim("./Dinvestigate_medstringent/chilensis_antarcticus_skua_localFstats_all.chilensis.antarcticus.skua_50_50.txt")
+maccormicki_antarcticus_skua.medstringent <- read.delim("./Dinvestigate_medstringent/maccormicki_antarcticus_skua_localFstats_all.maccormicki.antarcticus.skua_50_50.txt")
+skua_antarcticus_maccormicki.medstringent <- read.delim("./Dinvestigate_medstringent/skua_antarcticus_maccormicki_localFstats_all.skua.antarcticus.maccormicki_50_50.txt")
+chilensis_antarcticus_maccormicki.medstringent <- read.delim("./Dinvestigate_medstringent/chilensis_antarcticus_maccormicki_localFstats_all.chilensis.antarcticus.maccormicki_50_50.txt")
+maccormicki_antarcticus_chilensis.medstringent <- read.delim("./Dinvestigate_medstringent/maccormicki_antarcticus_chilensis_localFstats_all.maccormicki.antarcticus.chilensis_50_50.txt")
+
+```
+
+## Visualize data
+Then, make plots of the data.
+```{r plots, message=FALSE, warning=FALSE}
+#To make the figures, list three datasets that you want to plot. If you want to plot only 1 or two, just list the same dataset multiple times. Then you give the max y limit - I am setting it to 1 because that is the max value of f. Then the number of windows to combine in your sliding window, and then the name or part of the name of the chromosomes you want to plot. If you want to plot all of them, you can just put "". Then, TRUE will also plot df, but I only want fDM so I put false.
+
+#the colour order is: purple, orange, black, green
+#quartz()
+
+#shared ancestry between skua and antarcticus. Looks positive across most of the whole genome, except the region of chrZ where chrW likely aligns (and there is likely bias by combining males and females)
+ABBABABA.plotduo(skua_antarcticus_maccormicki.medstringent, maccormicki_antarcticus_skua.medstringent, chilensis_antarcticus_skua.medstringent, skua_antarcticus_maccormicki.medstringent, 0.5, 10, "chr", FALSE)
+
+#shared ancestry in amongst the southern hemisphere. Positive across the genome.
+ABBABABA.plotduo(chilensis_antarcticus_maccormicki.medstringent, maccormicki_antarcticus_chilensis.medstringent, chilensis_antarcticus_maccormicki.medstringent, chilensis_antarcticus_maccormicki.medstringent, 0.5, 10, "chr", FALSE)
+
+#shared ancestry between skua and pomarinus #variable, low magnitude
+ABBABABA.plotduo(antarcticus_skua_pomarinus.medstringent, chilensis_skua_pomarinus.medstringent, maccormicki_skua_pomarinus.medstringent, antarcticus_skua_pomarinus.medstringent, 0.5, 10, "chr", FALSE)
+
+#shared ancestry between antarcticus and pomarinus #low, above and below zero
+#ABBABABA.plotduo(maccormicki_antarcticus_pomarinus.medstringent, chilensis_antarcticus_pomarinus.medstringent, chilensis_antarcticus_pomarinus.medstringent, maccormicki_antarcticus_pomarinus.medstringent, 0.5, 10, "chr", FALSE)
+
+#shared ancestry with the jaegers
+#ABBABABA.plotduo(longicaudus_parasiticus_skua, longicaudus_parasiticus_pomarinus, maccormicki_pomarinus_parasiticus, antarcticus_pomarinus_parasiticus, 0.2, 1, "chr", FALSE)
+
+#MC1R is on chr7, I will look at this chromosome zoomed in
+ABBABABA.plotduo(maccormicki_skua_pomarinus.medstringent, chilensis_skua_pomarinus.medstringent, antarcticus_skua_pomarinus.medstringent, maccormicki_skua_pomarinus.medstringent, 0.5, 1, "chr7", FALSE)
+
+```
+
+Warning: do not overinterpret these chrZ results. The females are coded as diploid in the dataset, but they are actually hemizygous. Do not overinterpret the first 30 Mb of chrZ, as chrW sequences presumably align here in females, skewing the results when males and females are mixed.
+
+The first plot shows that the data is consistent with introgression between *S. skua* and *S. antarcticus* across most of the genome.
+
+## Generate figure
+Here is the figure that I will incorporate into the paper:
+```{r scan, message=FALSE, warning=FALSE}
+#combined
+#ABBABABA.plotduo(maccormicki_antarcticus_skua.medstringent, chilensis_antarcticus_maccormicki.medstringent, maccormicki_skua_pomarinus.medstringent, maccormicki_skua_pomarinus.medstringent, 0.3, 10, "chr", FALSE)
+ABBABABA.plotduo(maccormicki_antarcticus_skua.medstringent, maccormicki_antarcticus_chilensis.medstringent, maccormicki_skua_pomarinus.medstringent, maccormicki_skua_pomarinus.medstringent, 0.2, 10, "chr", FALSE)
+
+
+#check how large your windows area, that is good info to know. It will depend on the density of informative SNPs (generally higher the longer a branch is, leading to smaller windows)
+mean(maccormicki_skua_pomarinus.medstringent$windowEnd-maccormicki_skua_pomarinus.medstringent$windowStart) #1404406
+#mean(chilensis_antarcticus_maccormicki.medstringent$windowEnd-chilensis_antarcticus_maccormicki.medstringent$windowStart) #1933702
+mean(maccormicki_antarcticus_chilensis.medstringent$windowEnd-maccormicki_antarcticus_chilensis.medstringent$windowStart) #2101360
+mean(maccormicki_antarcticus_skua.medstringent$windowEnd-maccormicki_antarcticus_skua.medstringent$windowStart) #1400218
+
+#save the image as a pdf
+#I commented this out to avoid accidentally overwriting the version that I used in the manuscript
+ggsave("Dinvestigate_medstringent/Figure_fdM_GenomeScan.pdf", width=3456, height=2234, units="px")
+
+
+```
+
+I now manually edited this file in Illustrator to improve aesthetics (font), and add a custom legend. Note that these things can be done within R, but I prefer to experiment with aesthetics in Illustrator to have greater freedom. I am also removing chrZ from the figure: it is misleading to include because chrW sequences align to the 5' end of the chromosome in females. This means that females appear to share these chrZ 'variants', and this can create the exact same signal as introgression. Since the dataset is mixed with females and males, this is not meaningful for an introgression scan. For example, it looks like *f*~dM~ is strongly negative in this region for the trio in which P1=*S. maccormicki*, P2=*S. skua*, and P3=*S. pomarinus*; this is the pattern expected for introgression between *S. maccormicki* and *S. pomarinus*. In this dataset, *S. pomarinus* is 2/3 female, *S. skua* is 1/2 female, and *S. maccormicki* is 1/3 female, so these populations have different frequencies of chrW alleles. Similarly, *S. antarcticus* is 2/3 female and the purple line suggests unexpected introgression between *S. maccormicki* and *S. skua*. These patterns could be real, but I strongly suspect that instead the P1/P2 population with more male samples is being biased towards showing patterns consistent with "introgression". As a hint, when P1 is *S. chilensis* (which is female), *f*~dM~ becomes strongly positive as in introgression between *S. skua* and *S. pomarinus*. I do not want to mislead readers by including these patterns where they may easily be misinterpreted, as they appear to be strongly driven by data artifacts rather than biological processes. The rest of chrZ may also be affected: females have very low sequencing depth in this region, making genotype calls systematically biased towards the reference allele, inflating the number of shared derived alleles between males when they are heterozygous. We had to lower min sequencing depth to 3X in order to get enough data to produce the scans in the non-recombining Z, and this is likely to exacerbate reference bias. I would rather have no data for the Z chromosome than publish low-quality misleading data.
+
+## Verify results
+
+Finally, I want to check a few alternative datasets to ensure that patterns remain consistent and are not highly sensitive to choice of bioinformatic filters. If the patterns remain the same across stringently and minimally filtered datasets, I will have greater confidence in the results. I made three additional datasets to complement the main dataset.
+
+First, I will load these datasets
+```{r }
+#This dataset (Stercorarius.RAZObowtie.merged.filteredSNPs.auto.stringent.max17.vcf.gz) is the same as that used for the ABBA BABA test. This is a high quality SNP dataset, but has been filtered too severely, such that there are too few SNPs to get a high resolution scan across the genome.
+#shared ancestry between skua and pomarinus
+antarcticus_skua_pomarinus.stringent <- read.delim("./Dinvestigate_stringent/antarcticus_skua_pomarinus_localFstats_auto.antarcticus.skua.pomarinus_50_50.txt")
+chilensis_skua_pomarinus.stringent <- read.delim("./Dinvestigate_stringent/chilensis_skua_pomarinus_localFstats_auto.chilensis.skua.pomarinus_50_50.txt")
+maccormicki_skua_pomarinus.stringent <- read.delim("./Dinvestigate_stringent/maccormicki_skua_pomarinus_localFstats_auto.maccormicki.skua.pomarinus_50_50.txt")
+#shared ancestry between skua and antarcticus
+chilensis_antarcticus_skua.stringent <- read.delim("./Dinvestigate_stringent/chilensis_antarcticus_skua_localFstats_auto.chilensis.antarcticus.skua_50_50.txt")
+maccormicki_antarcticus_skua.stringent <- read.delim("./Dinvestigate_stringent/maccormicki_antarcticus_skua_localFstats_auto.maccormicki.antarcticus.skua_50_50.txt")
+skua_antarcticus_maccormicki.stringent <- read.delim("./Dinvestigate_stringent/skua_antarcticus_maccormicki_localFstats_auto.skua.antarcticus.maccormicki_50_50.txt")
+chilensis_antarcticus_maccormicki.stringent <- read.delim("./Dinvestigate_stringent/chilensis_antarcticus_maccormicki_localFstats_auto.chilensis.antarcticus.maccormicki_50_50.txt")
+maccormicki_antarcticus_chilensis.stringent <- read.delim("./Dinvestigate_stringent/maccormicki_antarcticus_chilensis_localFstats_auto.maccormicki.antarcticus.chilensis_50_50.txt")
+
+
+#This dataset (Stercorarius.RAZObowtie.merged.filteredSNPs.auto.min4.max17.vcf.gz) has been filtered the same as the ABBA BABA dataset but with the minimum genotype depth lowered to 4 (vs 6).
+#shared ancestry between skua and pomarinus
+antarcticus_skua_pomarinus_min4 <- read.delim("./Dinvestigate_min4/antarcticus_skua_pomarinus_localFstats_auto.antarcticus.skua.pomarinus_50_50.txt")
+chilensis_skua_pomarinus_min4 <- read.delim("./Dinvestigate_min4/chilensis_skua_pomarinus_localFstats_auto.chilensis.skua.pomarinus_50_50.txt")
+maccormicki_skua_pomarinus_min4 <- read.delim("./Dinvestigate_min4/maccormicki_skua_pomarinus_localFstats_auto.maccormicki.skua.pomarinus_50_50.txt")
+#shared ancestry between skua and antarcticus
+chilensis_antarcticus_skua_min4 <- read.delim("./Dinvestigate_min4/chilensis_antarcticus_skua_localFstats_auto.chilensis.antarcticus.skua_50_50.txt")
+maccormicki_antarcticus_skua_min4 <- read.delim("./Dinvestigate_min4/maccormicki_antarcticus_skua_localFstats_auto.maccormicki.antarcticus.skua_50_50.txt")
+skua_antarcticus_maccormicki_min4 <- read.delim("./Dinvestigate_min4/skua_antarcticus_maccormicki_localFstats_auto.skua.antarcticus.maccormicki_50_50.txt")
+#shared ancestry in amongst the southern hemisphere
+maccormicki_antarcticus_chilensis_min4 <- read.delim("./Dinvestigate_min4/maccormicki_antarcticus_chilensis_localFstats_auto.maccormicki.antarcticus.chilensis_50_50.txt")
+chilensis_antarcticus_maccormicki_min4 <- read.delim("./Dinvestigate_min4/chilensis_antarcticus_maccormicki_localFstats_auto.chilensis.antarcticus.maccormicki_50_50.txt")
+
+
+#This dataset (Stercorarius.RAZObowtie.merged.filteredSNPs.auto.max17.vcf.gz) has very relaxed filters: MQ and qual min 20 (rather than 25), no genotype quality filter, and min depth 4 (rather than 6). It gives good resolution across the genome, but some of the relaxed filters may be unnecessary (possibly adding noise instead of adding good data). The overall pattern is qualitatively the same as the more stringent datasets.
+#shared ancestry in amongst the southern hemisphere
+maccormicki_antarcticus_chilensis.NotStringent <- read.delim("Dinvestigate_NotStringent/maccormicki_antarcticus_chilensis_localFstats_all.maccormicki.antarcticus.chilensis_50_50.txt")
+chilensis_antarcticus_maccormicki.NotStringent <- read.delim("Dinvestigate_NotStringent/chilensis_antarcticus_maccormicki_localFstats_all.chilensis.antarcticus.maccormicki_50_50.txt")
+#shared ancestry between skua and pomarinus
+antarcticus_skua_pomarinus.NotStringent <- read.delim("Dinvestigate_NotStringent/antarcticus_skua_pomarinus_localFstats_all.antarcticus.skua.pomarinus_50_50.txt")
+chilensis_skua_pomarinus.NotStringent <- read.delim("Dinvestigate_NotStringent/chilensis_skua_pomarinus_localFstats_all.chilensis.skua.pomarinus_50_50.txt")
+maccormicki_skua_pomarinus.NotStringent <- read.delim("Dinvestigate_NotStringent/maccormicki_skua_pomarinus_localFstats_all.maccormicki.skua.pomarinus_50_50.txt")
+#shared ancestry between antarcticus and pomarinus
+chilensis_antarcticus_pomarinus.NotStringent <- read.delim("Dinvestigate_NotStringent/chilensis_antarcticus_pomarinus_localFstats_all.chilensis.antarcticus.pomarinus_50_50.txt")
+maccormicki_antarcticus_pomarinus.NotStringent <- read.delim("Dinvestigate_NotStringent/maccormicki_antarcticus_pomarinus_localFstats_all.maccormicki.antarcticus.pomarinus_50_50.txt")
+#shared ancestry between skua and antarcticus
+chilensis_antarcticus_skua.NotStringent <- read.delim("Dinvestigate_NotStringent/chilensis_antarcticus_skua_localFstats_all.chilensis.antarcticus.skua_50_50.txt")
+maccormicki_antarcticus_skua.NotStringent <- read.delim("Dinvestigate_NotStringent/maccormicki_antarcticus_skua_localFstats_all.maccormicki.antarcticus.skua_50_50.txt")
+skua_antarcticus_maccormicki.NotStringent <- read.delim("Dinvestigate_NotStringent/skua_antarcticus_maccormicki_localFstats_all.skua.antarcticus.maccormicki_50_50.txt")
+
+```
+
+Now that we have loaded these additional datasets, we can plot them alongside each other. I will make one plot per trio, plotting all four datasets together. The order that they are listed determines the colours: I will order them so that the stringent dataset is purple, medstringent is orange, NotStringent is black, and min4 is green.
+
+```{r visualize, message=FALSE, warning=FALSE}
+#the colour order is: purple, orange, black, green
+
+ABBABABA.plotduo(antarcticus_skua_pomarinus.stringent, antarcticus_skua_pomarinus.medstringent, antarcticus_skua_pomarinus.NotStringent, antarcticus_skua_pomarinus_min4, 0.4, 10, "chr", FALSE)
+ABBABABA.plotduo(chilensis_skua_pomarinus.stringent, chilensis_skua_pomarinus.medstringent, chilensis_skua_pomarinus.NotStringent, chilensis_skua_pomarinus_min4, 0.5, 10, "chr", FALSE)
+ABBABABA.plotduo(maccormicki_skua_pomarinus.stringent, maccormicki_skua_pomarinus.medstringent, maccormicki_skua_pomarinus.NotStringent, maccormicki_skua_pomarinus_min4, 0.4, 10, "chr", FALSE)
+
+ABBABABA.plotduo(chilensis_antarcticus_skua.stringent, chilensis_antarcticus_skua.medstringent, chilensis_antarcticus_skua.NotStringent, chilensis_antarcticus_skua_min4, 0.4, 10, "chr", FALSE)
+ABBABABA.plotduo(maccormicki_antarcticus_skua.stringent, maccormicki_antarcticus_skua.medstringent, maccormicki_antarcticus_skua.NotStringent, maccormicki_antarcticus_skua_min4, 0.4, 10, "chr", FALSE)
+ABBABABA.plotduo(skua_antarcticus_maccormicki.stringent, skua_antarcticus_maccormicki.medstringent, skua_antarcticus_maccormicki.NotStringent, skua_antarcticus_maccormicki_min4, 0.4, 10, "chr", FALSE)
+
+ABBABABA.plotduo(chilensis_antarcticus_maccormicki.stringent, chilensis_antarcticus_maccormicki.medstringent, chilensis_antarcticus_maccormicki.NotStringent, chilensis_antarcticus_maccormicki_min4, 0.4, 10, "chr", FALSE)
+ABBABABA.plotduo(maccormicki_antarcticus_chilensis.stringent, maccormicki_antarcticus_chilensis.medstringent, maccormicki_antarcticus_chilensis.NotStringent, maccormicki_antarcticus_chilensis_min4, 0.4, 10, "chr", FALSE)
+
+```
+
+The results are quite concordant, but note that the dataset with relaxed filters is somewhat more jagged (Due to higher resolution of the data with more SNPs, but may be exacerbated by more error and bias in the dataset due to relaxed filters), while the dataset with very strict filters is much more smoothed (as there is much less data, so values are averaged across wide windows). The dataset with relaxed missing data filters vs relaxed genotype depth filters are quite similar, suggesting that neither is introducing a unique bias. Note that chrZ is more severely affected. It has good resolution in the NotStringent dataset, which gave very relaxed filters to chrZ (min depth 3, MQ & Qual min 20, no missing data filter, no genotype quality filter). This relaxed filters let a lot of data through, but may not be very high quality. The min4 dataset has very poor resolution on chrZ. It uses min genotype depth of 4, MQ & Qual min 25, genotype quality 20, and max 17.6% missing data. Thus discarded too much data to be meaningful. The medstringent dataset gave good resolution for chrZ. This allows a min depth of 3, and like the medstringent autosomal data it has no missing data filters, but still MQ & Qual min 25. Note that I needed to lower the min depth on chrZ because females are hemizygous, and at the depth that we sequenced in this study, females had quite low depth on chrZ such that min depth of 6X was prohibitive for retaining enough data for this particular analysis based on genotype calls.  
+
