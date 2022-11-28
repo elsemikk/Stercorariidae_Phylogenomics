@@ -94,7 +94,7 @@ Here is an overview of how the different markdown files/folders map to each anal
 **Final result (autosomal): species.Astralblocks.unlinked.partitioned.tre**  
 **Final result (chromosome Z): species.Astralblocks.unlinked.partitioned.chrZ.nochrW.tre**  
 
-### Stabeast3 species tree  
+### Starbeast3 species tree  
 1.0_datasets -> 1.1c_read_trimming -> 1.3c_mapping -> 1.5c_genotyping -> 1.6.1c_phylogenetic_blocks -> 2.6c_Starbeast3_phylogeny  
 **Final result: species.16runs.100MILL.tree**  
 
